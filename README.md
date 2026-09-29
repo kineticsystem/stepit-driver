@@ -1,3 +1,5 @@
+# StepIt Driver
+
 [![CI](https://github.com/kineticsystem/stepit-driver/actions/workflows/industrial_ci.yml/badge.svg)](https://github.com/kineticsystem/stepit-driver/actions/workflows/industrial_ci.yml)
 [![Format](https://github.com/kineticsystem/stepit-driver/actions/workflows/ci-format.yml/badge.svg)](https://github.com/kineticsystem/stepit-driver/actions/workflows/ci-format.yml)
 [![Linters](https://github.com/kineticsystem/stepit-driver/actions/workflows/ci-ros-lint.yml/badge.svg)](https://github.com/kineticsystem/stepit-driver/actions/workflows/ci-ros-lint.yml)
@@ -8,8 +10,8 @@
 
 - [Introduction](#introduction)
 - [Prerequisites](#prerequisites)
-- [Install StepIt on the Microcontroller](#install-stepit-on-the-microcontroller)
-- [Install StepIt on the Local Computer](#install-stepit-on-the-local-computer)
+- [Install StepIt Driver on the Microcontroller](#install-stepit-driver-on-the-microcontroller)
+- [Install StepIt Driver on the Local Computer](#install-stepit-driver-on-the-local-computer)
   - [Chekout the Git Repository](#chekout-the-git-repository)
   - [Pre-Commit Hooks](#pre-commit-hooks)
   - [Build the Project](#build-the-project)
@@ -18,15 +20,15 @@
 
 ## Introduction
 
-StepIt is a project to control stepper motors with a Teensy microcontroller and ROS2. Watch [this video](https://github.com/user-attachments/assets/e67d46ce-e133-4e34-bab8-7d924be3dee4)
+StepIt Driver is a project to control stepper motors with a Teensy microcontroller and ROS2. Watch [this video](https://github.com/user-attachments/assets/e67d46ce-e133-4e34-bab8-7d924be3dee4)
 
 ## Prerequisites
 
-To run StepIt, we need a computer with Ubuntu 24.04. The preferred way to run it is inside a Docker container.
+To run StepIt Driver, we need a computer with Ubuntu 24.04. The preferred way to run it is inside a Docker container.
 
-If you want to run StepIt on your host machine, you must install ROS2. Please refer to the document [Install ROS2 Jazzy on Ubuntu](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html).
+If you want to run StepIt Driver on your host machine, you must install ROS2. Please refer to the document [Install ROS2 Jazzy on Ubuntu](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html).
 
-By default, StepIt runs in simulation mode so we do not an need actual hardware to play around with it.
+By default, StepIt Driver runs in simulation mode so we do not an need actual hardware to play around with it.
 
 For a real application, we recommend attaching the stepper motors to a Teensy microcontroller 4.0 or 4.1. We can hook the motors in many different ways but we suggest the following hardware configuration.
 
@@ -36,7 +38,7 @@ For a real application, we recommend attaching the stepper motors to a Teensy mi
 
 The Teensy is connected to a computer using a USB cable. For a portable application, we can use a [Raspberry PI 4](docs/install_ros_on_rasperry_pi/install_ros2_on_rasperry_pi.md).
 
-## Install StepIt on the Microcontroller
+## Install StepIt Driver on the Microcontroller
 
 This step is only required if you use a real hardware, otherwise skip to the following section.
 
@@ -46,7 +48,7 @@ If PlatformIO cannot find the Python interpreter, install the following:
 
 `sudo apt install python3-venv`
 
-To connect StepIt to a Teensy, you must install a udev rule on your host first. Without this rule, non-root users generally can't access the Teensy's HID interface that the loader/programmer needs.
+To connect StepIt Driver to a Teensy, you must install a udev rule on your host first. Without this rule, non-root users generally can't access the Teensy's HID interface that the loader/programmer needs.
 
 ```bash
 cd /tmp
@@ -76,7 +78,7 @@ The microcontroller is usually shown as `/dev/ttyACM0`. Remember to update your 
 </hardware>
 ```
 
-## Install StepIt on the Local Computer
+## Install StepIt Driver on the Local Computer
 
 ### Chekout the Git Repository
 
@@ -109,7 +111,7 @@ pre-commit install
 
 ### Build the Project
 
-The preferred way to build and run StepIt is to use a Docker container. It is defined in [`docker/docker-compose.yml`](docker/docker-compose.yml) and driven by the [`docker/dock.sh`](docker/dock.sh) script. See [docker/README.md](docker/README.md) for more details.
+The preferred way to build and run StepIt Driver is to use a Docker container. It is defined in [`docker/docker-compose.yml`](docker/docker-compose.yml) and driven by the [`docker/dock.sh`](docker/dock.sh) script. See [docker/README.md](docker/README.md) for more details.
 
 > [!IMPORTANT]
 > The docker container provides a default user `developer` with password `developer`. That user may run `sudo` without being asked for it, so that the scripts in `bin` also work from a non-interactive shell, e.g.
@@ -153,7 +155,7 @@ test
 
 ## Running the Application
 
-By default, the application runs with fake motors and a default active trajectory controller. Run the following commands to start StepIt. This will also start up RViz.
+By default, the application runs with fake motors and a default active trajectory controller. Run the following commands to start StepIt Driver. This will also start up RViz.
 
 ```
 source ~/ws/install/setup.bash
