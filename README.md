@@ -1,6 +1,6 @@
-[![CI](https://github.com/kineticsystem/stepit/actions/workflows/industrial_ci.yml/badge.svg)](https://github.com/kineticsystem/stepit/actions/workflows/industrial_ci.yml)
-[![Format](https://github.com/kineticsystem/stepit/actions/workflows/ci-format.yml/badge.svg)](https://github.com/kineticsystem/stepit/actions/workflows/ci-format.yml)
-[![Linters](https://github.com/kineticsystem/stepit/actions/workflows/ci-ros-lint.yml/badge.svg)](https://github.com/kineticsystem/stepit/actions/workflows/ci-ros-lint.yml)
+[![CI](https://github.com/kineticsystem/stepit-driver/actions/workflows/industrial_ci.yml/badge.svg)](https://github.com/kineticsystem/stepit-driver/actions/workflows/industrial_ci.yml)
+[![Format](https://github.com/kineticsystem/stepit-driver/actions/workflows/ci-format.yml/badge.svg)](https://github.com/kineticsystem/stepit-driver/actions/workflows/ci-format.yml)
+[![Linters](https://github.com/kineticsystem/stepit-driver/actions/workflows/ci-ros-lint.yml/badge.svg)](https://github.com/kineticsystem/stepit-driver/actions/workflows/ci-ros-lint.yml)
 
 <img src="docs/logo.png" width="50%">
 
@@ -83,13 +83,13 @@ The microcontroller is usually shown as `/dev/ttyACM0`. Remember to update your 
 Check out this git repository, including all required submodules.
 
 ```
-git clone --recurse-submodules git@github.com:kineticsystem/stepit.git
+git clone --recurse-submodules git@github.com:kineticsystem/stepit-driver.git
 ```
 
 If you missed the switch `--recurse-submodules`, you can clone all dependencies with the following commands:
 
 ```
-cd stepit
+cd stepit-driver
 git submodule update --init --recursive
 ```
 
@@ -113,12 +113,12 @@ The preferred way to build and run StepIt is to use a Docker container. It is de
 
 > [!IMPORTANT]
 > The docker container provides a default user `developer` with password `developer`. That user may run `sudo` without being asked for it, so that the scripts in `bin` also work from a non-interactive shell, e.g.
-> `docker exec stepit update.sh`.
+> `docker exec stepit-driver update.sh`.
 
 Build the image and create the container. The script always mounts the repo it belongs to, so it can be called from anywhere:
 
 ```
-./docker/dock.sh stepit build
+./docker/dock.sh stepit-driver build
 ```
 
 This is also how you pick up a change to the `Dockerfile`: it rebuilds only the layers that changed, so there is no need to clean first.
@@ -126,7 +126,7 @@ This is also how you pick up a change to the `Dockerfile`: it rebuilds only the 
 Start the container with an interactive shell:
 
 ```
-./docker/dock.sh stepit start
+./docker/dock.sh stepit-driver start
 ```
 
 The commands below assume you are inside the container (or, if you prefer not to use Docker, directly on a host machine with Ubuntu 24.04 and ROS 2 Jazzy installed).
@@ -160,7 +160,7 @@ source ~/ws/install/setup.bash
 ros2 launch robot_bringup launch.py
 ```
 
-Open a different terminal (if using Docker, attach to the same running container with `./docker/dock.sh stepit start`) and run the following command to rotate `joint1` by 6.28 rad clockwise:
+Open a different terminal (if using Docker, attach to the same running container with `./docker/dock.sh stepit-driver start`) and run the following command to rotate `joint1` by 6.28 rad clockwise:
 
 ```
 ros2 topic pub -1 /joint_trajectory_controller/joint_trajectory trajectory_msgs/msg/JointTrajectory "{
