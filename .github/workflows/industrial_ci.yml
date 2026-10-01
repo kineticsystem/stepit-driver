@@ -12,6 +12,8 @@ jobs:
     env:
       UPSTREAM_WORKSPACE: stepit.repos
     runs-on: ubuntu-24.04
+    # A normal run takes about 5 min; fail a stalled one instead of waiting 6 h.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v1
       - uses: "ros-industrial/industrial_ci@master"
