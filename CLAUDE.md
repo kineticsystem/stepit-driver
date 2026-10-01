@@ -43,7 +43,7 @@ clang-format -i <file>                    # format a single C++ file
 **Launch the simulation:**
 ```bash
 source install/setup.bash
-ros2 launch robot_description robot.launch.py   # add launch_rviz:=false for headless
+ros2 launch robot_description robot.launch.py   # add launch_rviz:=true to open RViz
 ```
 
 Whether the fake or the real driver is used is set by `use_dummy` in

@@ -155,11 +155,17 @@ test
 
 ## Running the Application
 
-By default, the application runs with fake motors and a default active trajectory controller. Run the following commands to start StepIt Driver. This will also start up RViz.
+By default, the application runs with fake motors and a default active trajectory controller. Run the following commands to start StepIt Driver. RViz does not start by default.
 
 ```
 source ~/ws/install/setup.bash
 ros2 launch robot_bringup launch.py
+```
+
+To also start RViz and see the robot move, set the launch argument `launch_rviz`:
+
+```
+ros2 launch robot_bringup launch.py launch_rviz:=true
 ```
 
 Open a different terminal (if using Docker, attach to the same running container with `./docker/dock.sh stepit-driver start`) and run the following command to rotate `joint1` by 6.28 rad clockwise:
