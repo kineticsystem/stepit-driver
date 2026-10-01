@@ -42,16 +42,6 @@ def generate_launch_description():
     Execute all launch files.
     https://docs.ros.org/en/foxy/Tutorials/Intermediate/Launch/Using-ROS2-Launch-For-Large-Projects.html
     """
-    robot_teleop = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [
-                PathJoinSubstitution(
-                    [FindPackageShare("robot_teleop"), "launch", "teleop.launch.py"]
-                )
-            ]
-        )
-    )
-
     robot_description = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
@@ -66,4 +56,4 @@ def generate_launch_description():
         )
     )
 
-    return LaunchDescription([robot_description, robot_teleop])
+    return LaunchDescription([robot_description])

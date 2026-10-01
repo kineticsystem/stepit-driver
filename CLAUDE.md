@@ -63,8 +63,7 @@ The project is a ROS 2 workspace with two top-level directories:
 | `stepit_hardware` | `ros2_control` hardware interface plugin (`StepitHardware`, exported as `stepit_driver/StepitHardware`) |
 | `stepit_driver` | `Driver` interface and implementations (`DefaultDriver`, `FakeDriver`) used by `StepitHardware` |
 | `robot_description` | URDF/xacro robot model, RViz config, controllers config, `robot.launch.py` |
-| `robot_bringup` | Top-level launch: includes `robot_description` and `robot_teleop` |
-| `robot_teleop` | Teleoperation node (joystick → `/velocity_controller/commands`) |
+| `robot_bringup` | Top-level launch: includes `robot_description` |
 | `stepit_hardware_tests` | Integration tests requiring real hardware |
 | `cobs_serial` | COBS-encoded serial communication library (ROS 2 package) |
 | `stepit_mcu` | PlatformIO project for Teensy firmware (not built by colcon) |

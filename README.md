@@ -247,6 +247,8 @@ ros2 topic pub -1 /velocity_controller/commands std_msgs/msg/Float64MultiArray "
 
 Each value is the target velocity, in rad/s, for the corresponding joint listed under `velocity_controller.joints` in `controllers.yaml` (currently `joint1` through `joint5`), so the array must have exactly one value per joint.
 
+To drive the velocity controller with a gamepad, see [Driving the Robot with a Gamepad](https://github.com/kineticsystem/stepit-macro/blob/main/docs/Gamepad.md) in StepIt Macro, which switches the controllers through its commander.
+
 The controller `position_controller` is also loaded but inactive. Deactivate any previous controller as per previous note.
 
 ```
