@@ -1,3 +1,8 @@
+# The ament linters of every package. They run in the ROS image, which ships
+# them: ros-tooling/setup-ros, which installed ROS on the runner, first asks the
+# GitHub API for a release without credentials, and fails whenever that API is
+# rate limited.
+
 name: ROS Lint
 
 on: [push, pull_request]
@@ -6,42 +11,33 @@ jobs:
   ament_lint:
     name: ament_${{ matrix.linter }}
     runs-on: ubuntu-24.04
+    container: ros:jazzy-ros-base
     strategy:
       fail-fast: false
       matrix:
-        linter: [copyright, lint_cmake]
+        include:
+          - linter: copyright
+          - linter: lint_cmake
+          - linter: cpplint
+            # As in .pre-commit-config.yaml.
+            arguments: --linelength=121 --filter=-whitespace/newline
     steps:
-      - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@v0.7
-      - uses: ros-tooling/action-ros-lint@v0.1
-        with:
-          distribution: jazzy
-          linter: ${{ matrix.linter }}
-          package-name: cobs_serial
-            robot_bringup
-            robot_description
-            stepit_driver
-            stepit_hardware
-            stepit_hardware_tests
-
-  ament_lint_121:
-    name: ament_${{ matrix.linter }}
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        linter: [cpplint]
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@v0.7
-      - uses: ros-tooling/action-ros-lint@v0.1
-        with:
-          distribution: jazzy
-          linter: cpplint
-          arguments: "--linelength=121 --filter=-whitespace/newline"
-          package-name: cobs_serial
-            robot_bringup
-            robot_description
-            stepit_driver
-            stepit_hardware
-            stepit_hardware_tests
+      - uses: actions/checkout@v4
+      - name: Lint
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          status=0
+          for package in \
+            src/cobs_serial \
+            src/robot_bringup \
+            src/robot_description \
+            src/stepit_driver \
+            src/stepit_hardware \
+            src/stepit_hardware_tests
+          do
+            echo "::group::$package"
+            ament_${{ matrix.linter }} ${{ matrix.arguments }} "$package" || status=1
+            echo "::endgroup::"
+          done
+          exit $status
