@@ -18,8 +18,6 @@ RUN echo 'root:docker' | chpasswd                      # Update user root passwo
 RUN if id -u ubuntu >/dev/null 2>&1; then userdel -r ubuntu; fi
 RUN if getent group ubuntu >/dev/null 2>&1; then groupdel ubuntu; fi
 
-RUN groupadd -g 107 input                              # Create the group 'input' (id 107) to access devices.
-
 ARG USER_UID=1000
 ARG USER_GID=1000
 
@@ -29,14 +27,13 @@ ARG USER_GID=1000
 RUN groupadd -g ${USER_GID} developer
 RUN useradd --create-home --shell /bin/bash --uid ${USER_UID} --gid ${USER_GID} developer
 RUN echo 'developer:developer' | chpasswd              # Update user developer password.
-RUN usermod -aG sudo,input developer                   # Add user to sudoers and input devices.
+RUN usermod -aG sudo developer                         # Add user to sudoers.
 
 RUN apt-get -y upgrade
 RUN apt-get -y install wget
 RUN apt-get -y install unzip
 RUN apt-get -y install python3
 RUN apt-get -y install python-is-python3
-RUN apt-get -y install jstest-gtk                      # Test connected joysticks.
 RUN apt-get install -y --no-install-recommends ros-jazzy-rmw-cyclonedds-cpp
 RUN apt-get install -y python3-colcon-common-extensions
 RUN apt-get install -y pre-commit

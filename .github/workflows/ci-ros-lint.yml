@@ -20,7 +20,6 @@ jobs:
           package-name: cobs_serial
             robot_bringup
             robot_description
-            robot_teleop
             stepit_driver
             stepit_hardware
             stepit_hardware_tests
@@ -43,7 +42,6 @@ jobs:
           package-name: cobs_serial
             robot_bringup
             robot_description
-            robot_teleop
             stepit_driver
             stepit_hardware
             stepit_hardware_tests

@@ -2,7 +2,7 @@
 # CONTAINER_NAME and USER_UID/USER_GID.
 #
 # The container runs the robot, so it needs the host's devices: the serial port
-# to the microcontroller and the joystick. Its network settings are mirrored by
+# to the microcontroller. Its network settings are mirrored by
 # the commander's container so the two can discover each other's ROS2 graph over
 # DDS (see cyclonedds.xml).
 
@@ -26,7 +26,7 @@ services:
       # repo root whatever machine it is checked out on.
       - ..:/home/developer/ws
       - /tmp/.X11-unix:/tmp/.X11-unix:ro
-      # The serial port to the microcontroller, and the joystick.
+      # The serial port to the microcontroller.
       - /dev:/dev
     environment:
       DISPLAY: ${DISPLAY:-}
