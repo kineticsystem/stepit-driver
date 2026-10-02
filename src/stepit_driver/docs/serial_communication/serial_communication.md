@@ -6,11 +6,11 @@ The objective of this document is to detail the protocol and technicalities of e
 
 Traditionally, ROS1 provided a feature-rich library known as [rosserial](http://wiki.ros.org/rosserial) for serial communications with microcontrollers. However, ROS2 lacks native support for the same. The closest alternative is [Micro-ROS](https://micro.ros.org/docs/overview/features/), which is unfortunately incompatible with AVR 8-bit microcontrollers like Arduino Uno and Arduino Nano.
 
-To bridge this gap, we have devised a frame-based serial communication protocol employing Consistent Overhead Byte Stuffing (COBS). This protocol facilitates Request/Response communication patterns between a C++ ROS2 node and the Teensy board, thereby enabling effective data exchange.
+To bridge this gap, we have devised a frame-based serial communication protocol employing PPP-style byte stuffing, implemented by the [framed_serial](https://github.com/kineticsystem/framed-serial) library. This protocol facilitates Request/Response communication patterns between a C++ ROS2 node and the Teensy board, thereby enabling effective data exchange.
 
 ### Technical Specifications
 
-The COBS algorithm utilizes a delimiter flag `0x7e` to distinguish between different frames. In scenarios where the delimiter flag appears within the frame data, an escape flag `0x7D` is introduced, followed by the XOR of the delimiter flag with `0x20`. The resulting two-byte sequence becomes `0x7d 0x5e`.
+The protocol utilizes a delimiter flag `0x7e` to distinguish between different frames. In scenarios where the delimiter flag appears within the frame data, an escape flag `0x7D` is introduced, followed by the XOR of the delimiter flag with `0x20`. The resulting two-byte sequence becomes `0x7d 0x5e`.
 
 Below is the structure of a data frame:
 

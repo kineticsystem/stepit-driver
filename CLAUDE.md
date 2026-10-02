@@ -70,13 +70,13 @@ The project is a ROS 2 workspace with two top-level directories:
 ### Submodules (`modules/`)
 
 - **`serial`** — Low-level cross-platform serial port C++ library (wjwwood/serial)
-- **`cobs-serial`** — the `cobs_serial` ROS 2 package: framed, CRC-checked messages over the serial port, shared with Freezer Driver ([kineticsystem/cobs-serial](https://github.com/kineticsystem/cobs-serial)). CI fetches both submodules through `stepit.repos`, since its checkout does not recurse into submodules: add a new submodule there too.
+- **`framed-serial`** — the `framed_serial` ROS 2 package: framed, CRC-checked messages over the serial port, shared with Freezer Driver ([kineticsystem/framed-serial](https://github.com/kineticsystem/framed-serial)). CI fetches both submodules through `stepit.repos`, since its checkout does not recurse into submodules: add a new submodule there too.
 
 ### Key Design Pattern: `stepit_hardware` / `stepit_driver`
 
 `StepitHardware` (a `hardware_interface::SystemInterface` plugin) delegates all hardware communication to a `Driver` interface:
 
-- **`DefaultDriver`** — real hardware, communicates via `CobsSerial` → framed serial → Teensy
+- **`DefaultDriver`** — real hardware, communicates via `FramedSerial` → framed serial → Teensy
 - **`FakeDriver`** — simulation, uses `FakeMotor` with `VelocityControl`/`PositionControl` internally
 - **`DefaultDriverFactory` / `DriverFactory`** — the factory is injected at construction time; in tests a mock factory is used
 
@@ -85,15 +85,15 @@ The `StepitHardware` reads joint configuration (motor IDs, max velocity, acceler
 ### Communication Stack (real hardware)
 
 ```
-StepitHardware → DefaultDriver → CobsSerial (cobs-serial submodule) → serial (submodule) → USB/serial → Teensy
+StepitHardware → DefaultDriver → FramedSerial (framed-serial submodule) → serial (submodule) → USB/serial → Teensy
 ```
 
-Despite its name, `cobs_serial` does not use COBS: frames are delimited by `0x7E`, `0x7E`/`0x7D` in the data are escaped with `0x7D` and XOR `0x20`, and each frame ends with a CRC-16/KERMIT. The protocol carries typed request/response messages defined in `stepit_driver/msgs/`.
+Frames are delimited by `0x7E`, `0x7E`/`0x7D` in the data are escaped with `0x7D` and XOR `0x20`, and each frame ends with a CRC-16/KERMIT. The protocol carries typed request/response messages defined in `stepit_driver/msgs/`.
 
 ### Testing Approach
 
 Tests use **GMock** (`ament_add_gmock`). Mocks live alongside tests:
-- `src/stepit_driver/tests/mock/mock_cobs_serial.hpp` — mocks the serial layer for `test_default_driver`
+- `src/stepit_driver/tests/mock/mock_framed_serial.hpp` — mocks the serial layer for `test_default_driver`
 - `src/stepit_hardware/tests/mock/mock_driver.hpp` / `mock_driver_factory.hpp` — mock the driver for `test_stepit_hardware`
 - `src/stepit_hardware/tests/fake/fake_hardware_info.hpp` — constructs `HardwareInfo` for unit tests without a URDF
 

@@ -30,9 +30,9 @@
 #include <stepit_driver/default_driver_factory.hpp>
 #include <stepit_driver/fake/fake_driver.hpp>
 
-#include <cobs_serial/data_utils.hpp>
-#include <cobs_serial/default_cobs_serial.hpp>
-#include <cobs_serial/default_cobs_serial_factory.hpp>
+#include <framed_serial/data_utils.hpp>
+#include <framed_serial/default_framed_serial.hpp>
+#include <framed_serial/default_framed_serial_factory.hpp>
 
 #include <rclcpp/logging.hpp>
 
@@ -43,7 +43,7 @@ const auto kLogger = rclcpp::get_logger("stepit_default_driver_factory");
 constexpr auto kUseDummyParamName = "use_dummy";
 constexpr auto kUseDummyParamDefault = "false";
 
-using cobs_serial::data_utils::to_lower;
+using framed_serial::data_utils::to_lower;
 
 std::unique_ptr<stepit_driver::Driver>
 stepit_driver::DefaultDriverFactory::create(const hardware_interface::HardwareInfo& info)
@@ -55,8 +55,8 @@ stepit_driver::DefaultDriverFactory::create(const hardware_interface::HardwareIn
   }
   else
   {
-    auto cobs_serial = cobs_serial::DefaultCobsSerialFactory().create(info);
-    return std::make_unique<DefaultDriver>(std::move(cobs_serial));
+    auto framed_serial = framed_serial::DefaultFramedSerialFactory().create(info);
+    return std::make_unique<DefaultDriver>(std::move(framed_serial));
   }
 }
 }  // namespace stepit_driver

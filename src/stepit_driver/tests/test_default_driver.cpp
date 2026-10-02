@@ -30,10 +30,10 @@
 
 #include <stdexcept>
 
-#include <mock/mock_cobs_serial.hpp>
+#include <mock/mock_framed_serial.hpp>
 #include <stepit_driver/default_driver.hpp>
 
-#include <cobs_serial/data_utils.hpp>
+#include <framed_serial/data_utils.hpp>
 
 namespace stepit_driver::test
 {
@@ -42,7 +42,7 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::Throw;
 
-using cobs_serial::data_utils::to_hex;
+using framed_serial::data_utils::to_hex;
 
 /**
  * Build the response the controller sends to an info query: a status byte,
@@ -56,11 +56,11 @@ std::vector<uint8_t> info_response(const std::string& name, uint8_t version_majo
   for (uint8_t id = 0; id < motor_count; id++)
   {
     out.push_back(id);
-    for (uint8_t byte : cobs_serial::data_utils::from_float(max_acceleration))
+    for (uint8_t byte : framed_serial::data_utils::from_float(max_acceleration))
     {
       out.push_back(byte);
     }
-    for (uint8_t byte : cobs_serial::data_utils::from_float(max_velocity))
+    for (uint8_t byte : framed_serial::data_utils::from_float(max_velocity))
     {
       out.push_back(byte);
     }
@@ -110,7 +110,7 @@ TEST(TestDefaultDriver, send_status_query)
   };
 
   std::vector<uint8_t> actual_request;
-  auto serial = std::make_unique<MockCobsSerial>();
+  auto serial = std::make_unique<MockFramedSerial>();
   EXPECT_CALL(*serial, write(_)).WillOnce(SaveArg<0>(&actual_request));
   EXPECT_CALL(*serial, read()).WillOnce(Return(mocked_response));
 
@@ -152,7 +152,7 @@ TEST(TestDefaultDriver, send_velocity_command)
   };
 
   std::vector<uint8_t> actual_request;
-  auto serial = std::make_unique<MockCobsSerial>();
+  auto serial = std::make_unique<MockFramedSerial>();
   EXPECT_CALL(*serial, write(_)).WillOnce(SaveArg<0>(&actual_request));
   EXPECT_CALL(*serial, read()).WillOnce(Return(mocked_response));
 
@@ -189,7 +189,7 @@ TEST(TestDefaultDriver, send_position_command)
   };
 
   std::vector<uint8_t> actual_request;
-  auto serial = std::make_unique<MockCobsSerial>();
+  auto serial = std::make_unique<MockFramedSerial>();
   EXPECT_CALL(*serial, write(_)).WillOnce(SaveArg<0>(&actual_request));
   EXPECT_CALL(*serial, read()).WillOnce(Return(mocked_response));
 
@@ -234,7 +234,7 @@ TEST(TestDefaultDriver, send_configure_command)
   };
 
   std::vector<uint8_t> actual_request;
-  auto serial = std::make_unique<MockCobsSerial>();
+  auto serial = std::make_unique<MockFramedSerial>();
   EXPECT_CALL(*serial, write(_)).WillOnce(SaveArg<0>(&actual_request));
   EXPECT_CALL(*serial, read()).WillOnce(Return(mocked_response));
 
@@ -290,7 +290,7 @@ TEST(TestDefaultDriver, connect_to_stepit_controller)
   };
 
   std::vector<std::vector<uint8_t>> actual_requests;
-  auto serial = std::make_unique<MockCobsSerial>();
+  auto serial = std::make_unique<MockFramedSerial>();
   EXPECT_CALL(*serial, open());
   EXPECT_CALL(*serial, write(_)).Times(3).WillRepeatedly([&](const std::vector<uint8_t>& request) {
     actual_requests.push_back(request);
@@ -327,7 +327,7 @@ TEST(TestDefaultDriver, connect_fails_when_motors_cannot_be_held)
     0x12  // status error
   };
 
-  auto serial = std::make_unique<MockCobsSerial>();
+  auto serial = std::make_unique<MockFramedSerial>();
   EXPECT_CALL(*serial, open());
   EXPECT_CALL(*serial, write(_)).Times(3);
   EXPECT_CALL(*serial, read())
@@ -349,7 +349,7 @@ TEST(TestDefaultDriver, connect_to_unknown_device)
 {
   const std::vector<uint8_t> mocked_response = info_response("OTHER");
 
-  auto serial = std::make_unique<MockCobsSerial>();
+  auto serial = std::make_unique<MockFramedSerial>();
   EXPECT_CALL(*serial, open());
   EXPECT_CALL(*serial, write(_)).Times(1);
   EXPECT_CALL(*serial, read()).WillOnce(Return(mocked_response));
@@ -365,7 +365,7 @@ TEST(TestDefaultDriver, connect_to_unknown_device)
  */
 TEST(TestDefaultDriver, connect_to_unresponsive_device)
 {
-  auto serial = std::make_unique<MockCobsSerial>();
+  auto serial = std::make_unique<MockFramedSerial>();
   EXPECT_CALL(*serial, open());
   EXPECT_CALL(*serial, write(_)).Times(5);
   EXPECT_CALL(*serial, read()).Times(5).WillRepeatedly(Throw(std::runtime_error("timeout")));
@@ -383,7 +383,7 @@ TEST(TestDefaultDriver, parse_limits_in_info_response)
 {
   const std::vector<uint8_t> mocked_response = info_response("STEPIT", 1, 5, 12.5663706f, 18.8495559f);
 
-  auto serial = std::make_unique<MockCobsSerial>();
+  auto serial = std::make_unique<MockFramedSerial>();
   EXPECT_CALL(*serial, write(_)).Times(1);
   EXPECT_CALL(*serial, read()).WillOnce(Return(mocked_response));
 
@@ -412,7 +412,7 @@ TEST(TestDefaultDriver, connect_to_device_sending_a_truncated_info_response)
   // Announces five motors but carries the limits of none of them.
   const std::vector<uint8_t> mocked_response{ 0x11, 0x01, 0x00, 0x00, 0x05 };
 
-  auto serial = std::make_unique<MockCobsSerial>();
+  auto serial = std::make_unique<MockFramedSerial>();
   EXPECT_CALL(*serial, open());
   EXPECT_CALL(*serial, write(_)).Times(5);
   EXPECT_CALL(*serial, read()).Times(5).WillRepeatedly(Return(mocked_response));
@@ -431,7 +431,7 @@ TEST(TestDefaultDriver, connect_to_incompatible_firmware)
 {
   const std::vector<uint8_t> mocked_response = info_response("STEPIT", 2);
 
-  auto serial = std::make_unique<MockCobsSerial>();
+  auto serial = std::make_unique<MockFramedSerial>();
   EXPECT_CALL(*serial, open());
   EXPECT_CALL(*serial, write(_)).Times(1);
   EXPECT_CALL(*serial, read()).WillOnce(Return(mocked_response));

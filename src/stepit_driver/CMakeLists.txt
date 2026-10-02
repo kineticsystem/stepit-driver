@@ -31,14 +31,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # software finds all required transitive dependencies to use this library.
 set(THIS_PACKAGE_INCLUDE_DEPENDS
     hardware_interface
-    cobs_serial
+    framed_serial
     rclcpp
     rclcpp_lifecycle
 )
 
 find_package(ament_cmake REQUIRED)
 find_package(hardware_interface REQUIRED)
-find_package(cobs_serial REQUIRED)
+find_package(framed_serial REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 

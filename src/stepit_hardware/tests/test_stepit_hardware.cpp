@@ -39,7 +39,7 @@
 
 #include <stepit_hardware/stepit_hardware.hpp>
 
-#include <cobs_serial/data_utils.hpp>
+#include <framed_serial/data_utils.hpp>
 
 #include <fake/fake_hardware_info.hpp>
 #include <mock/mock_driver.hpp>
