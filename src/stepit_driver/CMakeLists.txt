@@ -56,9 +56,12 @@ add_library(
     SHARED
     include/stepit_driver/default_driver.hpp
     include/stepit_driver/default_driver_factory.hpp
+    include/stepit_driver/default_framed_serial_factory.hpp
+    include/stepit_driver/default_serial_factory.hpp
     include/stepit_driver/driver.hpp
     include/stepit_driver/driver_factory.hpp
     include/stepit_driver/fake/fake_driver.hpp
+    include/stepit_driver/framed_serial_factory.hpp
     include/stepit_driver/fake/fake_motor.hpp
     include/stepit_driver/fake/position_kinematics.hpp
     include/stepit_driver/fake/velocity_kinematics.hpp
@@ -70,8 +73,11 @@ add_library(
     include/stepit_driver/msgs/response.hpp
     include/stepit_driver/msgs/status_response.hpp
     include/stepit_driver/msgs/velocity_command.hpp
+    include/stepit_driver/serial_factory.hpp
     src/default_driver.cpp
     src/default_driver_factory.cpp
+    src/default_framed_serial_factory.cpp
+    src/default_serial_factory.cpp
     src/fake/fake_driver.cpp
     src/fake/fake_motor.cpp
     src/fake/position_kinematics.cpp
