@@ -30,7 +30,6 @@ jobs:
           # Every package in one call: a linter fails on a package with no file
           # of its kind, e.g. cpplint on a package of messages only.
           ament_${{ matrix.linter }} ${{ matrix.arguments }} \
-            src/cobs_serial \
             src/robot_bringup \
             src/robot_description \
             src/stepit_driver \

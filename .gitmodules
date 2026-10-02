@@ -3,3 +3,7 @@
 	url = git@github.com:kineticsystem/serial.git
 [modules "serial"]
 	branch = ros2
+[submodule "modules/cobs-serial"]
+	path = modules/cobs-serial
+	url = git@github.com:kineticsystem/cobs-serial.git
+	branch = main

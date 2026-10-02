@@ -68,14 +68,14 @@ repos:
         description: Check source files for copyright headers.
         entry: ament_copyright
         language: system
-        files: ^src/(cobs_serial|robot_bringup|robot_description|stepit_driver|stepit_hardware|stepit_hardware_tests)/.*\.(c|cc|cxx|cpp|h|hpp|hxx|py)$
+        files: ^src/(robot_bringup|robot_description|stepit_driver|stepit_hardware|stepit_hardware_tests)/.*\.(c|cc|cxx|cpp|h|hpp|hxx|py)$
 
       - id: ament_lint_cmake
         name: ament_lint_cmake
         description: Lint CMakeLists.txt files.
         entry: ament_lint_cmake
         language: system
-        files: ^src/(cobs_serial|robot_bringup|robot_description|stepit_driver|stepit_hardware|stepit_hardware_tests)/.*CMakeLists\.txt$
+        files: ^src/(robot_bringup|robot_description|stepit_driver|stepit_hardware|stepit_hardware_tests)/.*CMakeLists\.txt$
 
       - id: ament_cpplint
         name: ament_cpplint
@@ -83,4 +83,4 @@ repos:
         entry: ament_cpplint
         language: system
         args: ["--linelength=121", "--filter=-whitespace/newline"]
-        files: ^src/(cobs_serial|robot_bringup|robot_description|stepit_driver|stepit_hardware|stepit_hardware_tests)/.*\.(c|cc|cxx|cpp|h|hpp|hxx)$
+        files: ^src/(robot_bringup|robot_description|stepit_driver|stepit_hardware|stepit_hardware_tests)/.*\.(c|cc|cxx|cpp|h|hpp|hxx)$

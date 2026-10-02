@@ -65,18 +65,18 @@ The project is a ROS 2 workspace with two top-level directories:
 | `robot_description` | URDF/xacro robot model, RViz config, controllers config, `robot.launch.py` |
 | `robot_bringup` | Top-level launch: includes `robot_description` |
 | `stepit_hardware_tests` | Integration tests requiring real hardware |
-| `cobs_serial` | COBS-encoded serial communication library (ROS 2 package) |
 | `stepit_mcu` | PlatformIO project for Teensy firmware (not built by colcon) |
 
 ### Submodules (`modules/`)
 
 - **`serial`** — Low-level cross-platform serial port C++ library (wjwwood/serial)
+- **`cobs-serial`** — the `cobs_serial` ROS 2 package: framed, CRC-checked messages over the serial port, shared with Freezer Driver ([kineticsystem/cobs-serial](https://github.com/kineticsystem/cobs-serial)). CI fetches both submodules through `stepit.repos`, since its checkout does not recurse into submodules: add a new submodule there too.
 
 ### Key Design Pattern: `stepit_hardware` / `stepit_driver`
 
 `StepitHardware` (a `hardware_interface::SystemInterface` plugin) delegates all hardware communication to a `Driver` interface:
 
-- **`DefaultDriver`** — real hardware, communicates via `CobsSerial` → COBS-encoded serial → Teensy
+- **`DefaultDriver`** — real hardware, communicates via `CobsSerial` → framed serial → Teensy
 - **`FakeDriver`** — simulation, uses `FakeMotor` with `VelocityControl`/`PositionControl` internally
 - **`DefaultDriverFactory` / `DriverFactory`** — the factory is injected at construction time; in tests a mock factory is used
 
@@ -85,10 +85,10 @@ The `StepitHardware` reads joint configuration (motor IDs, max velocity, acceler
 ### Communication Stack (real hardware)
 
 ```
-StepitHardware → DefaultDriver → CobsSerial (cobs_serial pkg) → serial (submodule) → USB/serial → Teensy
+StepitHardware → DefaultDriver → CobsSerial (cobs-serial submodule) → serial (submodule) → USB/serial → Teensy
 ```
 
-COBS encoding uses zero bytes as packet delimiters. The protocol carries typed request/response messages defined in `stepit_driver/msgs/`.
+Despite its name, `cobs_serial` does not use COBS: frames are delimited by `0x7E`, `0x7E`/`0x7D` in the data are escaped with `0x7D` and XOR `0x20`, and each frame ends with a CRC-16/KERMIT. The protocol carries typed request/response messages defined in `stepit_driver/msgs/`.
 
 ### Testing Approach
 
