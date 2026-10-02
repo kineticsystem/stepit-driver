@@ -16,7 +16,7 @@
   <depend>ros2_control</depend>
   <depend>ros2_controllers</depend>
   <depend>stepit_driver</depend>
-  <depend>cobs_serial</depend>
+  <depend>framed_serial</depend>
 
   <!--
   When you include the following linter dependencies and run tests on your ROS2

@@ -32,7 +32,7 @@
 
 #include <stepit_driver/driver.hpp>
 
-#include <cobs_serial/cobs_serial.hpp>
+#include <framed_serial/framed_serial.hpp>
 
 namespace stepit_driver
 {
@@ -43,7 +43,7 @@ namespace stepit_driver
 class DefaultDriver : public Driver
 {
 public:
-  explicit DefaultDriver(std::unique_ptr<cobs_serial::CobsSerial> data_interface);
+  explicit DefaultDriver(std::unique_ptr<framed_serial::FramedSerial> data_interface);
   bool connect() override;
   void disconnect() override;
   AcknowledgeResponse configure(const ConfigCommand& command) const override;
@@ -56,6 +56,6 @@ private:
   /** Makes every motor hold its current position, replacing the goal of a previous session. */
   bool hold_motors() const;
 
-  std::unique_ptr<cobs_serial::CobsSerial> cobs_serial_;
+  std::unique_ptr<framed_serial::FramedSerial> framed_serial_;
 };
 }  // namespace stepit_driver

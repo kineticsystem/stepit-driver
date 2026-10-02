@@ -30,20 +30,20 @@ find_package(ament_cmake REQUIRED)
 find_package(ros2_control REQUIRED)
 find_package(ros2_controllers REQUIRED)
 find_package(stepit_driver REQUIRED)
-find_package(cobs_serial REQUIRED)
+find_package(framed_serial REQUIRED)
 
 add_executable(get_status
     src/get_status.cpp
     src/command_line_utility.hpp
     src/command_line_utility.cpp
 )
-ament_target_dependencies(get_status stepit_driver cobs_serial)
+ament_target_dependencies(get_status stepit_driver framed_serial)
 
 add_executable(get_info
     src/get_info.cpp
     src/command_line_utility.hpp
     src/command_line_utility.cpp
 )
-ament_target_dependencies(get_info stepit_driver cobs_serial)
+ament_target_dependencies(get_info stepit_driver framed_serial)
 
 ament_package()

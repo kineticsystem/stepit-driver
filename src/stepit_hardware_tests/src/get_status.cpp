@@ -30,8 +30,8 @@
 
 #include <stepit_driver/default_driver.hpp>
 
-#include <cobs_serial/default_serial.hpp>
-#include <cobs_serial/default_cobs_serial.hpp>
+#include <framed_serial/default_serial.hpp>
+#include <framed_serial/default_framed_serial.hpp>
 
 #include "command_line_utility.hpp"
 
@@ -39,8 +39,8 @@ constexpr auto kUsbPort = "/dev/ttyACM0";
 constexpr auto kBaudRate = 9600;
 constexpr auto kTimeout = 0.2;
 
-using cobs_serial::DefaultCobsSerial;
-using cobs_serial::DefaultSerial;
+using framed_serial::DefaultFramedSerial;
+using framed_serial::DefaultSerial;
 using stepit_driver::DefaultDriver;
 using stepit_driver::MotorState;
 
@@ -91,9 +91,9 @@ int main(int argc, char* argv[])
     serial->set_baudrate(baudrate);
     serial->set_timeout(std::chrono::duration<double>{ timeout });
 
-    auto cobs_serial = std::make_unique<DefaultCobsSerial>(std::move(serial));
+    auto framed_serial = std::make_unique<DefaultFramedSerial>(std::move(serial));
 
-    auto driver = std::make_unique<DefaultDriver>(std::move(cobs_serial));
+    auto driver = std::make_unique<DefaultDriver>(std::move(framed_serial));
 
     std::cout << "Using the following parameters: " << std::endl;
     std::cout << " - port: " << port << std::endl;

@@ -8,7 +8,7 @@ bg=#FFFFFF
 DefaultSerial</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>319</x><y>539</y><w>110</w><h>33</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>80;10;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>154</x><y>418</y><w>176</w><h>44</h></coordinates><panel_attributes>valign=center
 transparency=0
 bg=#FFFFFF
-DefaultCobsSerial</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>154</x><y>308</y><w>176</w><h>44</h></coordinates><panel_attributes>valign=center
+DefaultFramedSerial</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>154</x><y>308</y><w>176</w><h>44</h></coordinates><panel_attributes>valign=center
 transparency=0
 bg=#FFFFFF
 DefaultDriver</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>319</x><y>451</y><w>110</w><h>99</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>80;70;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>319</x><y>341</y><w>110</w><h>99</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>80;70;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>154</x><y>198</y><w>176</w><h>44</h></coordinates><panel_attributes>valign=center
@@ -18,7 +18,7 @@ StepitHardware</panel_attributes><additional_attributes></additional_attributes>
 transparency=0
 bg=#FFFFFF
 &lt;&lt;interface&gt;&gt;
-CobsSerial</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>407</x><y>308</y><w>176</w><h>44</h></coordinates><panel_attributes>valign=center
+FramedSerial</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>407</x><y>308</y><w>176</w><h>44</h></coordinates><panel_attributes>valign=center
 transparency=0
 bg=#FFFFFF
 &lt;&lt;interface&gt;&gt;
@@ -28,7 +28,7 @@ bg=#FFFFFF
 MockSerial</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>572</x><y>539</y><w>110</w><h>33</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;80;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>660</x><y>418</y><w>176</w><h>44</h></coordinates><panel_attributes>valign=center
 transparency=0
 bg=#FFFFFF
-MockCobsSerial</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>660</x><y>308</y><w>176</w><h>44</h></coordinates><panel_attributes>valign=center
+MockFramedSerial</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>660</x><y>308</y><w>176</w><h>44</h></coordinates><panel_attributes>valign=center
 transparency=0
 bg=#FFFFFF
 MockDriver</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>572</x><y>429</y><w>110</w><h>33</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;80;10</additional_attributes></element><element><id>Relation</id><coordinates><x>572</x><y>319</y><w>110</w><h>33</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;80;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>407</x><y>198</y><w>176</w><h>44</h></coordinates><panel_attributes>valign=center

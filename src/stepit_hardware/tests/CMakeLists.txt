@@ -3,7 +3,7 @@ find_package(ament_cmake_gtest REQUIRED)
 find_package(ament_cmake_gmock REQUIRED)
 find_package(ament_lint_auto REQUIRED)
 find_package(ros2_control_test_assets REQUIRED)
-find_package(cobs_serial REQUIRED)
+find_package(framed_serial REQUIRED)
 
 ament_lint_auto_find_test_dependencies()
 
@@ -28,7 +28,7 @@ target_link_libraries(test_stepit_hardware
     stepit_hardware
 )
 ament_target_dependencies(test_stepit_hardware
-    cobs_serial
+    framed_serial
     pluginlib
     ros2_control_test_assets
 )

@@ -32,11 +32,11 @@
 
 #include <vector>
 
-#include <cobs_serial/cobs_serial.hpp>
+#include <framed_serial/framed_serial.hpp>
 
 namespace stepit_driver::test
 {
-class MockCobsSerial : public cobs_serial::CobsSerial
+class MockFramedSerial : public framed_serial::FramedSerial
 {
 public:
   MOCK_METHOD(void, open, (), (override));

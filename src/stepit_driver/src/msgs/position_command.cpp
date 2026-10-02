@@ -28,7 +28,7 @@
 
 #include <stepit_driver/msgs/position_command.hpp>
 
-#include <cobs_serial/data_utils.hpp>
+#include <framed_serial/data_utils.hpp>
 
 namespace stepit_driver
 {

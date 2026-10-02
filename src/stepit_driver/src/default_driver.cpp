@@ -31,7 +31,7 @@
 
 #include <stepit_driver/default_driver.hpp>
 
-#include <cobs_serial/data_utils.hpp>
+#include <framed_serial/data_utils.hpp>
 
 #include <rclcpp/logging.hpp>
 #include <rclcpp/time.hpp>
@@ -55,18 +55,18 @@ constexpr auto kExpectedControllerName = "STEPIT";
 // trusted: see VERSION_MAJOR in src/stepit_mcu/src/main.cpp.
 constexpr uint8_t kExpectedProtocolVersion = 1;
 
-using cobs_serial::data_utils::from_float;
-using cobs_serial::data_utils::to_float;
-using cobs_serial::data_utils::to_hex;
+using framed_serial::data_utils::from_float;
+using framed_serial::data_utils::to_float;
+using framed_serial::data_utils::to_hex;
 
-DefaultDriver::DefaultDriver(std::unique_ptr<cobs_serial::CobsSerial> cobs_serial)
-  : cobs_serial_{ std::move(cobs_serial) }
+DefaultDriver::DefaultDriver(std::unique_ptr<framed_serial::FramedSerial> framed_serial)
+  : framed_serial_{ std::move(framed_serial) }
 {
 }
 
 bool DefaultDriver::connect()
 {
-  cobs_serial_->open();
+  framed_serial_->open();
 
   // Send an info query multiple times until an answer comes back, then
   // verify that the device on the other end identifies itself as a StepIt
@@ -154,7 +154,7 @@ bool DefaultDriver::hold_motors() const
 
 void DefaultDriver::disconnect()
 {
-  cobs_serial_->close();
+  framed_serial_->close();
 }
 
 AcknowledgeResponse DefaultDriver::configure(const ConfigCommand& command) const
@@ -176,8 +176,8 @@ AcknowledgeResponse DefaultDriver::configure(const ConfigCommand& command) const
     in.emplace_back(max_velocity_bytes[3]);
   }
   RCLCPP_DEBUG(kLogger, "Config command: %s", to_hex(in).c_str());
-  cobs_serial_->write(in);
-  std::vector<uint8_t> out = cobs_serial_->read();
+  framed_serial_->write(in);
+  std::vector<uint8_t> out = framed_serial_->read();
   RCLCPP_DEBUG(kLogger, "Config response: %s", to_hex(out).c_str());
   Response::Status status{ out[0] };
   AcknowledgeResponse response{ status };
@@ -198,8 +198,8 @@ AcknowledgeResponse DefaultDriver::set_position(const rclcpp::Time&, const Posit
     in.emplace_back(position_bytes[3]);
   }
   RCLCPP_DEBUG(kLogger, "Position command: %s", to_hex(in).c_str());
-  cobs_serial_->write(in);
-  std::vector<uint8_t> out = cobs_serial_->read();
+  framed_serial_->write(in);
+  std::vector<uint8_t> out = framed_serial_->read();
   RCLCPP_DEBUG(kLogger, "Position response: %s", to_hex(out).c_str());
   Response::Status status{ out[0] };
   AcknowledgeResponse response{ status };
@@ -220,8 +220,8 @@ AcknowledgeResponse DefaultDriver::set_velocity(const rclcpp::Time&, const Veloc
     in.emplace_back(velocity_bytes[3]);
   }
   RCLCPP_DEBUG(kLogger, "Velocity command: %s", to_hex(in).c_str());
-  cobs_serial_->write(in);
-  std::vector<uint8_t> out = cobs_serial_->read();
+  framed_serial_->write(in);
+  std::vector<uint8_t> out = framed_serial_->read();
   RCLCPP_DEBUG(kLogger, "Velocity response: %s", to_hex(out).c_str());
   Response::Status status{ out[0] };
   AcknowledgeResponse response{ status };
@@ -233,8 +233,8 @@ StatusResponse DefaultDriver::get_status(const rclcpp::Time&) const
   std::vector<uint8_t> in;
   in.emplace_back(kMotorStatusQueryId);
   RCLCPP_DEBUG(kLogger, "Status query: %s", to_hex(in).c_str());
-  cobs_serial_->write(in);
-  auto out = cobs_serial_->read();
+  framed_serial_->write(in);
+  auto out = framed_serial_->read();
   RCLCPP_DEBUG(kLogger, "Status response: %s", to_hex(out).c_str());
 
   // The response contains the following information.
@@ -274,8 +274,8 @@ InfoResponse DefaultDriver::get_info(const rclcpp::Time&) const
   std::vector<uint8_t> in;
   in.emplace_back(kInfoQueryId);
   RCLCPP_DEBUG(kLogger, "Info query: %s", to_hex(in).c_str());
-  cobs_serial_->write(in);
-  auto out = cobs_serial_->read();
+  framed_serial_->write(in);
+  auto out = framed_serial_->read();
   RCLCPP_DEBUG(kLogger, "Info response: %s", to_hex(out).c_str());
 
   // The data array contains the following information.
