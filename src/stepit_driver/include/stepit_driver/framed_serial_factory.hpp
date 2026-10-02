@@ -26,37 +26,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <stepit_driver/default_driver.hpp>
-#include <stepit_driver/default_driver_factory.hpp>
-#include <stepit_driver/default_framed_serial_factory.hpp>
-#include <stepit_driver/fake/fake_driver.hpp>
+#pragma once
 
-#include <framed_serial/data_utils.hpp>
-#include <framed_serial/default_framed_serial.hpp>
+#include <memory>
 
-#include <rclcpp/logging.hpp>
+#include <framed_serial/framed_serial.hpp>
+
+#include <hardware_interface/hardware_info.hpp>
 
 namespace stepit_driver
 {
-const auto kLogger = rclcpp::get_logger("stepit_default_driver_factory");
-
-constexpr auto kUseDummyParamName = "use_dummy";
-constexpr auto kUseDummyParamDefault = "false";
-
-using framed_serial::data_utils::to_lower;
-
-std::unique_ptr<stepit_driver::Driver>
-stepit_driver::DefaultDriverFactory::create(const hardware_interface::HardwareInfo& info)
+class FramedSerialFactory
 {
-  if (info.hardware_parameters.count(kUseDummyParamName) &&
-      to_lower(info.hardware_parameters.at(kUseDummyParamName)) != to_lower(kUseDummyParamDefault))
-  {
-    return std::make_unique<FakeDriver>();
-  }
-  else
-  {
-    auto framed_serial = DefaultFramedSerialFactory().create(info);
-    return std::make_unique<DefaultDriver>(std::move(framed_serial));
-  }
-}
+public:
+  virtual ~FramedSerialFactory() = default;
+  virtual std::unique_ptr<framed_serial::FramedSerial> create(const hardware_interface::HardwareInfo& info) const = 0;
+};
 }  // namespace stepit_driver
