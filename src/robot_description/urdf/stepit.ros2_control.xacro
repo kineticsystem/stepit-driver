@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:macro name="stepit_ros2_control" params="name">
+  <xacro:macro name="stepit_ros2_control" params="name use_dummy:=true usb_port:=/dev/ttyACM0 baud_rate:=9600">
 
     <ros2_control name="${name}" type="system">
       <hardware>
         <plugin>stepit_driver/StepitHardware</plugin>
-        <param name="use_dummy">true</param>
-        <param name="usb_port">/dev/ttyACM0</param>
-        <param name="baud_rate">9600</param>
+        <param name="use_dummy">${use_dummy}</param>
+        <param name="usb_port">${usb_port}</param>
+        <param name="baud_rate">${baud_rate}</param>
         <param name="timeout">0.2</param>
       </hardware>
       <joint name="joint1">
