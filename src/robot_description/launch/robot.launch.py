@@ -51,7 +51,10 @@ import xacro
 
 def launch_setup(context, *_args, **_kwargs):
     # Declare all parameters.
-    launch_rviz = LaunchConfiguration("launch_rviz")
+    # Read now, not when RViz starts: RViz waits for an event, which comes after
+    # the launch file that includes this one may have closed its scope, e.g.
+    # StepIt Macro, which runs every module in a scoped group.
+    launch_rviz = LaunchConfiguration("launch_rviz").perform(context)
 
     # Extract all parameters' values.
     description_pkg = FindPackageShare("robot_description")
