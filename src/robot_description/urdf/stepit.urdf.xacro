@@ -3,5 +3,13 @@
   <xacro:include filename="$(find robot_description)/urdf/stepit.sample_robot.xacro" />
   <xacro:include filename="$(find robot_description)/urdf/stepit.ros2_control.xacro" />
   <xacro:stepit_sample_robot />
-  <xacro:stepit_ros2_control name="stepit_ros2_control" />
+  <!-- The hardware, set by the launch arguments of the same names: the fake
+       motors by default. -->
+  <xacro:arg name="use_dummy" default="true" />
+  <xacro:arg name="usb_port" default="/dev/ttyACM0" />
+  <xacro:arg name="baud_rate" default="9600" />
+  <xacro:stepit_ros2_control name="stepit_ros2_control"
+                             use_dummy="$(arg use_dummy)"
+                             usb_port="$(arg usb_port)"
+                             baud_rate="$(arg baud_rate)" />
 </robot>

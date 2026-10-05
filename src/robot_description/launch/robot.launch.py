@@ -69,7 +69,14 @@ def launch_setup(context, *_args, **_kwargs):
         ]
     ).perform(context)
 
-    robot_description_content = xacro.process_file(description_file).toxml()
+    # The hardware, as the xacro arguments of the same names.
+    hardware = {
+        name: LaunchConfiguration(name).perform(context)
+        for name in ("use_dummy", "usb_port", "baud_rate")
+    }
+    robot_description_content = xacro.process_file(
+        description_file, mappings=hardware
+    ).toxml()
 
     with open(controllers_config_file, "r") as f:
         controllers_config = yaml.safe_load(f)
@@ -240,6 +247,21 @@ def generate_launch_description():
     declared_arguments = [
         DeclareLaunchArgument(
             "launch_rviz", default_value="false", description="Launch RViz?"
+        ),
+        DeclareLaunchArgument(
+            "use_dummy",
+            default_value="true",
+            description="Use fake motors instead of the microcontroller.",
+        ),
+        DeclareLaunchArgument(
+            "usb_port",
+            default_value="/dev/ttyACM0",
+            description="Serial port of the microcontroller.",
+        ),
+        DeclareLaunchArgument(
+            "baud_rate",
+            default_value="9600",
+            description="Speed of the serial port, the one of the firmware.",
         ),
         OpaqueFunction(function=launch_setup),
     ]

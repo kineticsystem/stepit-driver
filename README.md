@@ -66,17 +66,7 @@ To flash the microcontroller code into the Teensy:
 - Open the subfolder `stepit_mcu` in VSCode
 - Select the correct device and flash it
 
-The microcontroller is usually shown as `/dev/ttyACM0`. Remember to update your ROS2 control configuration in `stepit.ros2_control.xacro` and disable `use_dummy`.
-
-```xml
-<hardware>
-  <plugin>stepit_driver/StepitHardware</plugin>
-  <param name="use_dummy">false</param>
-  <param name="usb_port">/dev/ttyACM0</param>
-  <param name="baud_rate">9600</param>
-  <param name="timeout">0.2</param>
-</hardware>
-```
+The microcontroller is usually shown as `/dev/ttyACM0`. To drive it instead of the fake motors, start the application with `use_dummy:=false`, see [Running the Application](#running-the-application).
 
 ## Install StepIt Driver on the Local Computer
 
@@ -167,6 +157,21 @@ To also start RViz and see the robot move, set the launch argument `launch_rviz`
 ```
 ros2 launch robot_bringup launch.py launch_rviz:=true
 ```
+
+To drive the microcontroller instead of the fake motors, set `use_dummy`, and `usb_port` if it is not on `/dev/ttyACM0`:
+
+```
+ros2 launch robot_bringup launch.py use_dummy:=false usb_port:=/dev/ttyACM0
+```
+
+| Launch argument | Default | Description |
+|---|---|---|
+| `launch_rviz` | `false` | Start RViz. |
+| `use_dummy` | `true` | Use fake motors instead of the microcontroller. |
+| `usb_port` | `/dev/ttyACM0` | Serial port of the microcontroller. |
+| `baud_rate` | `9600` | Speed of the serial port, the one of the firmware. |
+
+They are xacro arguments of [`stepit.urdf.xacro`](src/robot_description/urdf/stepit.urdf.xacro), which passes them to the `<hardware>` of [`stepit.ros2_control.xacro`](src/robot_description/urdf/stepit.ros2_control.xacro).
 
 Open a different terminal (if using Docker, attach to the same running container with `./docker/dock.sh stepit-driver start`) and run the following command to rotate `joint1` by 6.28 rad clockwise:
 

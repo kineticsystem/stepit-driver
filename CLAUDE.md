@@ -46,8 +46,10 @@ source install/setup.bash
 ros2 launch robot_description robot.launch.py   # add launch_rviz:=true to open RViz
 ```
 
-Whether the fake or the real driver is used is set by `use_dummy` in
-`src/robot_description/urdf/stepit.ros2_control.xacro` (checked in as `true`, i.e. simulation).
+Whether the fake or the real driver is used is set by the launch argument `use_dummy` (`true` by
+default, i.e. simulation), next to `usb_port` and `baud_rate`: `robot.launch.py` passes them to
+xacro as the arguments of `src/robot_description/urdf/stepit.urdf.xacro`. Never change them in the
+xacro to configure a robot: StepIt Macro sets them as launch arguments.
 
 ## Architecture
 
