@@ -1,6 +1,6 @@
 # StepIt Description
 
-This package configures a sample robot that uses the StepIt Driver. The robot is displayed in RViz.
+This package configures a sample robot that uses StepIt Motors. The robot is displayed in RViz.
 
 To activate the robot execute the following command:
 
