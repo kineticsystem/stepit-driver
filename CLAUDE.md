@@ -72,7 +72,7 @@ The project is a ROS 2 workspace with two top-level directories:
 ### Submodules (`modules/`)
 
 - **`serial`** — Low-level cross-platform serial port C++ library (wjwwood/serial)
-- **`framed-serial`** — the `framed_serial` ROS 2 package: framed, CRC-checked messages over the serial port, shared with Freezer Driver ([kineticsystem/framed-serial](https://github.com/kineticsystem/framed-serial)). CI fetches both submodules through `stepit.repos`, since its checkout does not recurse into submodules: add a new submodule there too.
+- **`framed-serial`** — the `framed_serial` ROS 2 package: framed, CRC-checked messages over the serial port, shared with StepIt Freezer ([kineticsystem/framed-serial](https://github.com/kineticsystem/framed-serial)). CI fetches both submodules through `stepit.repos`, since its checkout does not recurse into submodules: add a new submodule there too.
 
 ### Key Design Pattern: `stepit_hardware` / `stepit_driver`
 

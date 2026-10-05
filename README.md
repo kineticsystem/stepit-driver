@@ -1,8 +1,8 @@
-# StepIt Driver
+# StepIt Motors
 
-[![CI](https://github.com/kineticsystem/stepit-driver/actions/workflows/industrial_ci.yml/badge.svg)](https://github.com/kineticsystem/stepit-driver/actions/workflows/industrial_ci.yml)
-[![Format](https://github.com/kineticsystem/stepit-driver/actions/workflows/ci-format.yml/badge.svg)](https://github.com/kineticsystem/stepit-driver/actions/workflows/ci-format.yml)
-[![Linters](https://github.com/kineticsystem/stepit-driver/actions/workflows/ci-ros-lint.yml/badge.svg)](https://github.com/kineticsystem/stepit-driver/actions/workflows/ci-ros-lint.yml)
+[![CI](https://github.com/kineticsystem/stepit-motors/actions/workflows/industrial_ci.yml/badge.svg)](https://github.com/kineticsystem/stepit-motors/actions/workflows/industrial_ci.yml)
+[![Format](https://github.com/kineticsystem/stepit-motors/actions/workflows/ci-format.yml/badge.svg)](https://github.com/kineticsystem/stepit-motors/actions/workflows/ci-format.yml)
+[![Linters](https://github.com/kineticsystem/stepit-motors/actions/workflows/ci-ros-lint.yml/badge.svg)](https://github.com/kineticsystem/stepit-motors/actions/workflows/ci-ros-lint.yml)
 
 <img src="docs/logo.png" width="50%">
 
@@ -10,8 +10,8 @@
 
 - [Introduction](#introduction)
 - [Prerequisites](#prerequisites)
-- [Install StepIt Driver on the Microcontroller](#install-stepit-driver-on-the-microcontroller)
-- [Install StepIt Driver on the Local Computer](#install-stepit-driver-on-the-local-computer)
+- [Install StepIt Motors on the Microcontroller](#install-stepit-motors-on-the-microcontroller)
+- [Install StepIt Motors on the Local Computer](#install-stepit-motors-on-the-local-computer)
   - [Chekout the Git Repository](#chekout-the-git-repository)
   - [Pre-Commit Hooks](#pre-commit-hooks)
   - [Build the Project](#build-the-project)
@@ -20,15 +20,15 @@
 
 ## Introduction
 
-StepIt Driver is a project to control stepper motors with a Teensy microcontroller and ROS2. Watch [this video](https://github.com/user-attachments/assets/e67d46ce-e133-4e34-bab8-7d924be3dee4)
+StepIt Motors is a project to control stepper motors with a Teensy microcontroller and ROS2. Watch [this video](https://github.com/user-attachments/assets/e67d46ce-e133-4e34-bab8-7d924be3dee4)
 
 ## Prerequisites
 
-To run StepIt Driver, we need a computer with Ubuntu 24.04. The preferred way to run it is inside a Docker container.
+To run StepIt Motors, we need a computer with Ubuntu 24.04. The preferred way to run it is inside a Docker container.
 
-If you want to run StepIt Driver on your host machine, you must install ROS2. Please refer to the document [Install ROS2 Jazzy on Ubuntu](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html).
+If you want to run StepIt Motors on your host machine, you must install ROS2. Please refer to the document [Install ROS2 Jazzy on Ubuntu](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html).
 
-By default, StepIt Driver runs in simulation mode so we do not an need actual hardware to play around with it.
+By default, StepIt Motors runs in simulation mode so we do not an need actual hardware to play around with it.
 
 For a real application, we recommend attaching the stepper motors to a Teensy microcontroller 4.0 or 4.1. We can hook the motors in many different ways but we suggest the following hardware configuration.
 
@@ -38,7 +38,7 @@ For a real application, we recommend attaching the stepper motors to a Teensy mi
 
 The Teensy is connected to a computer using a USB cable. For a portable application, we can use a [Raspberry PI 4](docs/install_ros_on_rasperry_pi/install_ros2_on_rasperry_pi.md).
 
-## Install StepIt Driver on the Microcontroller
+## Install StepIt Motors on the Microcontroller
 
 This step is only required if you use a real hardware, otherwise skip to the following section.
 
@@ -48,7 +48,7 @@ If PlatformIO cannot find the Python interpreter, install the following:
 
 `sudo apt install python3-venv`
 
-To connect StepIt Driver to a Teensy, you must install a udev rule on your host first. Without this rule, non-root users generally can't access the Teensy's HID interface that the loader/programmer needs.
+To connect StepIt Motors to a Teensy, you must install a udev rule on your host first. Without this rule, non-root users generally can't access the Teensy's HID interface that the loader/programmer needs.
 
 ```bash
 cd /tmp
@@ -68,20 +68,20 @@ To flash the microcontroller code into the Teensy:
 
 The microcontroller is usually shown as `/dev/ttyACM0`. To drive it instead of the fake motors, start the application with `use_dummy:=false`, see [Running the Application](#running-the-application).
 
-## Install StepIt Driver on the Local Computer
+## Install StepIt Motors on the Local Computer
 
 ### Chekout the Git Repository
 
 Check out this git repository, including all required submodules.
 
 ```
-git clone --recurse-submodules git@github.com:kineticsystem/stepit-driver.git
+git clone --recurse-submodules git@github.com:kineticsystem/stepit-motors.git
 ```
 
 If you missed the switch `--recurse-submodules`, you can clone all dependencies with the following commands:
 
 ```
-cd stepit-driver
+cd stepit-motors
 git submodule update --init --recursive
 ```
 
@@ -101,16 +101,16 @@ pre-commit install
 
 ### Build the Project
 
-The preferred way to build and run StepIt Driver is to use a Docker container. It is defined in [`docker/docker-compose.yml`](docker/docker-compose.yml) and driven by the [`docker/dock.sh`](docker/dock.sh) script. See [docker/README.md](docker/README.md) for more details.
+The preferred way to build and run StepIt Motors is to use a Docker container. It is defined in [`docker/docker-compose.yml`](docker/docker-compose.yml) and driven by the [`docker/dock.sh`](docker/dock.sh) script. See [docker/README.md](docker/README.md) for more details.
 
 > [!IMPORTANT]
 > The docker container provides a default user `developer` with password `developer`. That user may run `sudo` without being asked for it, so that the scripts in `bin` also work from a non-interactive shell, e.g.
-> `docker exec stepit-driver update.sh`.
+> `docker exec stepit-motors update.sh`.
 
 Build the image and create the container. The script always mounts the repo it belongs to, so it can be called from anywhere:
 
 ```
-./docker/dock.sh stepit-driver build
+./docker/dock.sh stepit-motors build
 ```
 
 This is also how you pick up a change to the `Dockerfile`: it rebuilds only the layers that changed, so there is no need to clean first.
@@ -118,7 +118,7 @@ This is also how you pick up a change to the `Dockerfile`: it rebuilds only the 
 Start the container with an interactive shell:
 
 ```
-./docker/dock.sh stepit-driver start
+./docker/dock.sh stepit-motors start
 ```
 
 The commands below assume you are inside the container (or, if you prefer not to use Docker, directly on a host machine with Ubuntu 24.04 and ROS 2 Jazzy installed).
@@ -145,7 +145,7 @@ test
 
 ## Running the Application
 
-By default, the application runs with fake motors and a default active trajectory controller. Run the following commands to start StepIt Driver. RViz does not start by default.
+By default, the application runs with fake motors and a default active trajectory controller. Run the following commands to start StepIt Motors. RViz does not start by default.
 
 ```
 source ~/ws/install/setup.bash
@@ -173,7 +173,7 @@ ros2 launch robot_bringup launch.py use_dummy:=false usb_port:=/dev/ttyACM0
 
 They are xacro arguments of [`stepit.urdf.xacro`](src/robot_description/urdf/stepit.urdf.xacro), which passes them to the `<hardware>` of [`stepit.ros2_control.xacro`](src/robot_description/urdf/stepit.ros2_control.xacro).
 
-Open a different terminal (if using Docker, attach to the same running container with `./docker/dock.sh stepit-driver start`) and run the following command to rotate `joint1` by 6.28 rad clockwise:
+Open a different terminal (if using Docker, attach to the same running container with `./docker/dock.sh stepit-motors start`) and run the following command to rotate `joint1` by 6.28 rad clockwise:
 
 ```
 ros2 topic pub -1 /joint_trajectory_controller/joint_trajectory trajectory_msgs/msg/JointTrajectory "{

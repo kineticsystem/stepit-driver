@@ -15,9 +15,9 @@ services:
         # writable and correctly owned on the host.
         USER_UID: ${USER_UID:-1000}
         USER_GID: ${USER_GID:-1000}
-    image: ${CONTAINER_NAME:-stepit-driver}:latest
-    container_name: ${CONTAINER_NAME:-stepit-driver}
-    hostname: ${CONTAINER_NAME:-stepit-driver}
+    image: ${CONTAINER_NAME:-stepit-motors}:latest
+    container_name: ${CONTAINER_NAME:-stepit-motors}
+    hostname: ${CONTAINER_NAME:-stepit-motors}
     privileged: true
     # Required for DDS discovery between this container and the commander's.
     network_mode: host
