@@ -34,4 +34,5 @@ jobs:
             src/robot_description \
             src/stepit_driver \
             src/stepit_hardware \
-            src/stepit_hardware_tests
+            src/stepit_hardware_tests \
+            src/stepit_motors_msgs

@@ -30,5 +30,7 @@ target_link_libraries(test_stepit_hardware
 ament_target_dependencies(test_stepit_hardware
     framed_serial
     pluginlib
+    rclcpp
     ros2_control_test_assets
+    stepit_motors_msgs
 )

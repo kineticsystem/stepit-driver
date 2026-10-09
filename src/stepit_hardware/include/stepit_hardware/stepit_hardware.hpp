@@ -29,8 +29,10 @@
 #pragma once
 
 #include <atomic>
+#include <chrono>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -47,6 +49,7 @@
 #include <rclcpp_lifecycle/state.hpp>
 #include <rclcpp/macros.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <stepit_motors_msgs/msg/motors_status.hpp>
 
 namespace stepit_driver
 {
@@ -212,6 +215,33 @@ private:
   // problem found. Tracks the joints already reported in a bitmask, hence the
   // limit on the number of joints checked in on_init().
   bool motor_states_are_valid(const std::vector<MotorState>& motor_states) const;
+
+  // The status of the connection to the controller, published on ~/status of
+  // the node ros2_control gives the hardware, e.g. /motors/status: latched,
+  // when it changes and every second. Without that node, e.g. in a test that
+  // passes no executor, nothing is published.
+  //
+  // set_status() records a change, also from read() and write(): the realtime
+  // loop never publishes, the status timer does, on the node's executor.
+  void set_status(bool connected, const std::string& message);
+  void publish_status_if_due();
+  void publish_status();
+
+  rclcpp::Publisher<stepit_motors_msgs::msg::MotorsStatus>::SharedPtr status_publisher_;
+  rclcpp::TimerBase::SharedPtr status_timer_;
+  std::chrono::steady_clock::time_point last_status_publish_{};
+
+  // The serial port of the controller, or "fake" for the fake driver.
+  std::string device_;
+
+  // Guards connected_ and status_message_, written from the realtime loop and
+  // read by the status timer.
+  std::mutex status_mutex_;
+  bool connected_ = false;
+  std::string status_message_;
+
+  // Raised by set_status() on a change, cleared by publish_status().
+  std::atomic<bool> status_changed_{ false };
 
   // Interface to send binary data to the hardware using the serial port.
   std::unique_ptr<Driver> driver_;

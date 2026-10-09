@@ -30,6 +30,7 @@
 #include <limits>
 #include <vector>
 #include <string>
+#include <cctype>
 #include <cmath>
 
 #include <stepit_hardware/stepit_hardware.hpp>
@@ -56,6 +57,10 @@ constexpr double kLimitTolerance = 1.001;
 // Upper bound on the number of joints, set by the bitmask motor_states_are_valid()
 // uses to track which of them a status response has already reported.
 constexpr std::size_t kMaxJoints = 32;
+
+// How often the status is checked for a change, and published anyway.
+constexpr std::chrono::milliseconds kStatusCheckPeriod{ 100 };
+constexpr std::chrono::seconds kStatusPublishPeriod{ 1 };
 
 const auto kLogger = rclcpp::get_logger("stepit_hardware");
 
@@ -132,6 +137,25 @@ StepitHardware::on_init(const hardware_interface::HardwareComponentInterfacePara
     }
 
     driver_ = driver_factory_->create(info_);
+
+    const auto& parameters = info_.hardware_parameters;
+    // As DefaultDriverFactory decides: the fake driver when use_dummy is not false.
+    std::string use_dummy = parameters.count("use_dummy") ? parameters.at("use_dummy") : "false";
+    std::transform(use_dummy.begin(), use_dummy.end(), use_dummy.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    const bool fake = use_dummy != "false";
+    device_ = fake ? "fake" : (parameters.count("usb_port") ? parameters.at("usb_port") : "");
+    set_status(false, "Not connected yet.");
+
+    // ros2_control gives the hardware a node of its own, named after it, when
+    // it runs it in a controller manager.
+    if (const auto node = get_node())
+    {
+      status_publisher_ = node->create_publisher<stepit_motors_msgs::msg::MotorsStatus>(
+          "~/status", rclcpp::QoS(1).reliable().transient_local());
+      status_timer_ = node->create_wall_timer(kStatusCheckPeriod, [this] { publish_status_if_due(); });
+      publish_status();
+    }
     return CallbackReturn::SUCCESS;
   }
   catch (const std::exception& ex)
@@ -153,10 +177,16 @@ StepitHardware::on_configure(const rclcpp_lifecycle::State& previous_state)
 
     // Open the serial port and handshake: the driver verifies that the device
     // on the other end identifies itself as a StepIt controller.
+    // Each failure below leaves the hardware disconnected, saying why.
+    auto failure = [this](const std::string& message) {
+      RCLCPP_ERROR(kLogger, "%s", message.c_str());
+      set_status(false, message);
+      return CallbackReturn::FAILURE;
+    };
+
     if (!driver_->connect())
     {
-      RCLCPP_ERROR(kLogger, "Cannot connect to the StepIt controller.");
-      return CallbackReturn::FAILURE;
+      return failure("Cannot connect to the StepIt controller.");
     }
 
     // Ask the controller what its motors tolerate and check the values the
@@ -167,12 +197,11 @@ StepitHardware::on_configure(const rclcpp_lifecycle::State& previous_state)
     const InfoResponse info = driver_->get_info(rclcpp::Time{});
     if (info.status() != Response::Status::Success)
     {
-      RCLCPP_ERROR(kLogger, "The StepIt controller did not report its limits.");
-      return CallbackReturn::FAILURE;
+      return failure("The StepIt controller did not report its limits.");
     }
     if (!joints_are_within_limits(info.limits()))
     {
-      return CallbackReturn::FAILURE;
+      return failure("A joint exceeds the limits of the StepIt controller: see the log.");
     }
 
     // Send configuration parameters to the hardware.
@@ -184,7 +213,7 @@ StepitHardware::on_configure(const rclcpp_lifecycle::State& previous_state)
     const AcknowledgeResponse response = driver_->configure(ConfigCommand{ params });
     if (response.status() == Response::Status::Failure)
     {
-      return CallbackReturn::FAILURE;
+      return failure("The StepIt controller rejected the configuration of the motors.");
     }
 
     // Verify that the controller reports exactly the motors configured above,
@@ -194,8 +223,7 @@ StepitHardware::on_configure(const rclcpp_lifecycle::State& previous_state)
     const StatusResponse status = driver_->get_status(rclcpp::Time{});
     if (status.status() != Response::Status::Success)
     {
-      RCLCPP_ERROR(kLogger, "The StepIt controller did not report its motors status.");
-      return CallbackReturn::FAILURE;
+      return failure("The StepIt controller did not report its motors status.");
     }
     // A matching motor count does not prove the id mapping: the controller
     // could report an out-of-range or a duplicated id and still match the
@@ -203,12 +231,15 @@ StepitHardware::on_configure(const rclcpp_lifecycle::State& previous_state)
     // read cycle.
     if (!motor_states_are_valid(status.motor_states()))
     {
-      return CallbackReturn::FAILURE;
+      return failure("The StepIt controller does not report the configured motors: see the log.");
     }
+    set_status(true, "");
     return CallbackReturn::SUCCESS;
   }
   catch (const std::exception& ex)
   {
+    RCLCPP_ERROR(kLogger, "Cannot connect to the StepIt controller: %s", ex.what());
+    set_status(false, std::string{ "Cannot connect to the StepIt controller: " } + ex.what());
     set_lifecycle_state(rclcpp_lifecycle::State(lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED,
                                                 hardware_interface::lifecycle_state_names::UNCONFIGURED));
     return CallbackReturn::ERROR;
@@ -352,6 +383,7 @@ hardware_interface::return_type StepitHardware::read(const rclcpp::Time& time,
     auto motor_states = response.motor_states();
     if (!motor_states_are_valid(motor_states))
     {
+      set_status(false, "The StepIt controller reported an invalid status: see the log.");
       return hardware_interface::return_type::ERROR;
     }
 
@@ -368,6 +400,8 @@ hardware_interface::return_type StepitHardware::read(const rclcpp::Time& time,
   }
   catch (const std::exception& ex)
   {
+    RCLCPP_ERROR(kLogger, "Lost the StepIt controller: %s", ex.what());
+    set_status(false, std::string{ "Lost the StepIt controller: " } + ex.what());
     set_lifecycle_state(rclcpp_lifecycle::State(lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED,
                                                 hardware_interface::lifecycle_state_names::UNCONFIGURED));
     return hardware_interface::return_type::ERROR;
@@ -433,6 +467,7 @@ hardware_interface::return_type StepitHardware::write(const rclcpp::Time& time,
         // report the failure so that ros2_control deactivates the component
         // instead of the loop carrying on as though the goal had been taken.
         RCLCPP_ERROR(kLogger, "The StepIt controller rejected a velocity command.");
+        set_status(false, "The StepIt controller rejected a velocity command.");
         return hardware_interface::return_type::ERROR;
       }
     }
@@ -442,6 +477,7 @@ hardware_interface::return_type StepitHardware::write(const rclcpp::Time& time,
       if (response.status() != Response::Status::Success)
       {
         RCLCPP_ERROR(kLogger, "The StepIt controller rejected a position command.");
+        set_status(false, "The StepIt controller rejected a position command.");
         return hardware_interface::return_type::ERROR;
       }
     }
@@ -449,6 +485,8 @@ hardware_interface::return_type StepitHardware::write(const rclcpp::Time& time,
   }
   catch (const std::exception& ex)
   {
+    RCLCPP_ERROR(kLogger, "Lost the StepIt controller: %s", ex.what());
+    set_status(false, std::string{ "Lost the StepIt controller: " } + ex.what());
     set_lifecycle_state(rclcpp_lifecycle::State(lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED,
                                                 hardware_interface::lifecycle_state_names::UNCONFIGURED));
     return hardware_interface::return_type::ERROR;
@@ -519,6 +557,49 @@ StepitHardware::perform_command_mode_switch(const std::vector<std::string>& star
   set_claim(stop_interfaces, false);
   set_claim(start_interfaces, true);
   return hardware_interface::return_type::OK;
+}
+
+void StepitHardware::set_status(bool connected, const std::string& message)
+{
+  {
+    std::lock_guard lock{ status_mutex_ };
+    if (connected_ == connected && status_message_ == message)
+    {
+      return;
+    }
+    connected_ = connected;
+    status_message_ = message;
+  }
+  status_changed_ = true;
+}
+
+void StepitHardware::publish_status_if_due()
+{
+  if (status_changed_ || std::chrono::steady_clock::now() - last_status_publish_ >= kStatusPublishPeriod)
+  {
+    publish_status();
+  }
+}
+
+void StepitHardware::publish_status()
+{
+  if (!status_publisher_)
+  {
+    return;
+  }
+  // Taken before reading the status: a change that lands later is published
+  // on the next tick.
+  status_changed_ = false;
+  stepit_motors_msgs::msg::MotorsStatus status;
+  status.stamp = get_node()->now();
+  status.device = device_;
+  {
+    std::lock_guard lock{ status_mutex_ };
+    status.connected = connected_;
+    status.message = status_message_;
+  }
+  status_publisher_->publish(status);
+  last_status_publish_ = std::chrono::steady_clock::now();
 }
 
 }  // namespace stepit_driver

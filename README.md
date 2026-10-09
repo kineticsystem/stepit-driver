@@ -173,6 +173,12 @@ ros2 launch robot_bringup launch.py use_dummy:=false usb_port:=/dev/ttyACM0
 
 They are xacro arguments of [`stepit.urdf.xacro`](src/robot_description/urdf/stepit.urdf.xacro), which passes them to the `<hardware>` of [`stepit.ros2_control.xacro`](src/robot_description/urdf/stepit.ros2_control.xacro).
 
+The hardware, named `motors`, tells whether it talks to the controller on `/motors/status` (`stepit_motors_msgs/msg/MotorsStatus`): `connected`, the serial port, or `fake`, in `device`, and in `message` why it is not connected, e.g. the error of the serial port. ros2_control gives the hardware a node named after it, which publishes the status when it changes and every second, and keeps the last one for a client that subscribes late. When a read or a write fails, e.g. because the Teensy was unplugged, ros2_control deactivates the hardware, and it stays disconnected until `ros2_control_node` starts again:
+
+```
+ros2 topic echo /motors/status --qos-durability transient_local
+```
+
 Open a different terminal (if using Docker, attach to the same running container with `./docker/dock.sh stepit-motors start`) and run the following command to rotate `joint1` by 6.28 rad clockwise:
 
 ```

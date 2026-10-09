@@ -64,6 +64,7 @@ The project is a ROS 2 workspace with two top-level directories:
 |---|---|
 | `stepit_hardware` | `ros2_control` hardware interface plugin (`StepitHardware`, exported as `stepit_driver/StepitHardware`) |
 | `stepit_driver` | `Driver` interface and implementations (`DefaultDriver`, `FakeDriver`) used by `StepitHardware` |
+| `stepit_motors_msgs` | `MotorsStatus`, the message of `/motors/status` |
 | `robot_description` | URDF/xacro robot model, RViz config, controllers config, `robot.launch.py` |
 | `robot_bringup` | Top-level launch: includes `robot_description` |
 | `stepit_hardware_tests` | Integration tests requiring real hardware |
@@ -83,6 +84,8 @@ The project is a ROS 2 workspace with two top-level directories:
 - **`DefaultDriverFactory` / `DriverFactory`** — the factory is injected at construction time; in tests a mock factory is used
 
 The `StepitHardware` reads joint configuration (motor IDs, max velocity, acceleration) from the URDF `<ros2_control>` block via `HardwareInfo`.
+
+`StepitHardware` publishes whether it talks to the controller on `~/status` of the node ros2_control gives the hardware, named after the hardware: `motors` in `stepit.urdf.xacro`, hence `/motors/status`, which StepIt Macro's page reads, so never rename the hardware. The topic is transient local, published on a change and every second by a timer on that node. `read()` and `write()` run in the realtime loop and never publish: they only record a change with `set_status()`. Without an executor, e.g. in a test that calls `on_init()` directly, there is no node and nothing is published; the status tests call `init()` with an executor.
 
 ### Communication Stack (real hardware)
 
