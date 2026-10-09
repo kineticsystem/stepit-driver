@@ -16,6 +16,7 @@
   <depend>lifecycle_msgs</depend>
   <depend>hardware_interface</depend>
   <depend>pluginlib</depend>
+  <depend>stepit_motors_msgs</depend>
 
   <test_depend>ament_clang_format</test_depend>
   <test_depend>ament_clang_tidy</test_depend>

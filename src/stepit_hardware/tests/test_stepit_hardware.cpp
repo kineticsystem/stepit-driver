@@ -28,11 +28,14 @@
 
 #include <gtest/gtest.h>
 
+#include <chrono>
 #include <cmath>
 #include <functional>
 #include <map>
 #include <memory>
 #include <numeric>
+#include <optional>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -47,11 +50,14 @@
 
 #include <hardware_interface/resource_manager.hpp>
 #include <hardware_interface/types/hardware_component_interface_params.hpp>
+#include <hardware_interface/types/hardware_component_params.hpp>
 #include <hardware_interface/types/lifecycle_state_names.hpp>
 #include <lifecycle_msgs/msg/state.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 #include <ros2_control_test_assets/components_urdfs.hpp>
 #include <ros2_control_test_assets/descriptions.hpp>
+#include <stepit_motors_msgs/msg/motors_status.hpp>
 
 namespace stepit_driver::test
 {
@@ -1369,6 +1375,188 @@ TEST(TestStepitHardware, a_release_during_write_still_stops_the_motor)
   ASSERT_EQ(1u, sent.velocities.size());
   const std::map<uint8_t, double> expected = { { 0, 0.0 }, { 1, 0.75 } };
   EXPECT_EQ(expected, goals_of(sent.velocities[0]));
+}
+
+/**
+ * The hardware publishes its connection on ~/status of the node ros2_control
+ * gives it, which needs an executor: these tests initialize it as the
+ * controller manager does, through init(), rather than through on_init().
+ */
+class TestStepitHardwareStatus : public ::testing::Test
+{
+protected:
+  using MotorsStatus = stepit_motors_msgs::msg::MotorsStatus;
+
+  static void SetUpTestSuite()
+  {
+    rclcpp::init(0, nullptr);
+  }
+
+  static void TearDownTestSuite()
+  {
+    rclcpp::shutdown();
+  }
+
+  void SetUp() override
+  {
+    executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+    listener_ = std::make_shared<rclcpp::Node>("status_listener");
+    executor_->add_node(listener_);
+  }
+
+  void TearDown() override
+  {
+    executor_->remove_node(listener_);
+  }
+
+  /** A hardware on the mock driver, initialized with an executor, hence with its node. */
+  std::unique_ptr<StepitHardware> make_hardware(std::unique_ptr<MockDriver> mock_driver,
+                                                hardware_interface::HardwareInfo info = FakeHardwareInfo{})
+  {
+    auto hardware = std::make_unique<StepitHardware>(std::make_unique<MockDriverFactory>(std::move(mock_driver)));
+    hardware_interface::HardwareComponentParams params;
+    params.hardware_info = info;
+    params.clock = std::make_shared<rclcpp::Clock>();
+    params.executor = executor_;
+    EXPECT_EQ(hardware_interface::CallbackReturn::SUCCESS, hardware->init(params));
+    return hardware;
+  }
+
+  /** A driver whose handshake succeeds. */
+  static std::unique_ptr<MockDriver> healthy_driver()
+  {
+    auto mock_driver = std::make_unique<MockDriver>();
+    ON_CALL(*mock_driver, connect()).WillByDefault(Return(true));
+    ON_CALL(*mock_driver, get_info(_)).WillByDefault(Return(handshake_info()));
+    ON_CALL(*mock_driver, get_status(_)).WillByDefault(Return(handshake_status()));
+    ON_CALL(*mock_driver, configure(Matcher<const ConfigCommand&>(_)))
+        .WillByDefault(Return(AcknowledgeResponse{ Response::Status::Success }));
+    return mock_driver;
+  }
+
+  /**
+   * Subscribes now, as a page that opens late does, and spins until a status
+   * satisfying the predicate comes, or a few seconds pass.
+   */
+  std::optional<MotorsStatus> wait_for_status(const std::function<bool(const MotorsStatus&)>& predicate)
+  {
+    std::optional<MotorsStatus> received;
+    auto subscription = listener_->create_subscription<MotorsStatus>(
+        "/stepithardware/status", rclcpp::QoS(1).reliable().transient_local(), [&](const MotorsStatus& status) {
+          if (predicate(status))
+          {
+            received = status;
+          }
+        });
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (!received && std::chrono::steady_clock::now() < deadline)
+    {
+      executor_->spin_some(std::chrono::milliseconds(50));
+    }
+    return received;
+  }
+
+  static rclcpp_lifecycle::State unconfigured()
+  {
+    return { lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED,
+             hardware_interface::lifecycle_state_names::UNCONFIGURED };
+  }
+
+  std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> executor_;
+  rclcpp::Node::SharedPtr listener_;
+};
+
+/**
+ * Before the handshake the hardware is not connected; after it, a subscriber
+ * that comes later still gets the status, which is latched.
+ */
+TEST_F(TestStepitHardwareStatus, publishes_a_latched_status_once_connected)
+{
+  auto hardware = make_hardware(healthy_driver());
+
+  const auto before = wait_for_status([](const MotorsStatus&) { return true; });
+  ASSERT_TRUE(before.has_value());
+  EXPECT_FALSE(before->connected);
+  EXPECT_EQ("fake", before->device);
+
+  ASSERT_EQ(hardware_interface::CallbackReturn::SUCCESS, hardware->on_configure(unconfigured()));
+  const auto after = wait_for_status([](const MotorsStatus& status) { return status.connected; });
+  ASSERT_TRUE(after.has_value());
+  EXPECT_EQ("", after->message);
+}
+
+/**
+ * With the real driver, the status names the serial port.
+ */
+TEST_F(TestStepitHardwareStatus, names_the_serial_port_of_the_real_driver)
+{
+  hardware_interface::HardwareInfo info = FakeHardwareInfo{};
+  info.hardware_parameters["use_dummy"] = "False";
+  info.hardware_parameters["usb_port"] = "/dev/ttyACM7";
+  auto hardware = make_hardware(healthy_driver(), info);
+
+  const auto status = wait_for_status([](const MotorsStatus&) { return true; });
+  ASSERT_TRUE(status.has_value());
+  EXPECT_EQ("/dev/ttyACM7", status->device);
+}
+
+/**
+ * A handshake that fails leaves the hardware disconnected, saying why.
+ */
+TEST_F(TestStepitHardwareStatus, reports_a_failed_connection)
+{
+  auto mock_driver = healthy_driver();
+  ON_CALL(*mock_driver, connect()).WillByDefault(Return(false));
+  auto hardware = make_hardware(std::move(mock_driver));
+
+  ASSERT_EQ(hardware_interface::CallbackReturn::FAILURE, hardware->on_configure(unconfigured()));
+  const auto status = wait_for_status([](const MotorsStatus& s) { return s.message.find("Cannot connect") == 0; });
+  ASSERT_TRUE(status.has_value());
+  EXPECT_FALSE(status->connected);
+}
+
+/**
+ * A serial port that fails while the robot runs, e.g. the controller
+ * unplugged, disconnects the hardware with the error of the port: the read
+ * cycle only records it, and the status timer publishes it.
+ */
+TEST_F(TestStepitHardwareStatus, reports_a_controller_lost_while_running)
+{
+  auto mock_driver = healthy_driver();
+  auto* driver = mock_driver.get();
+  auto hardware = make_hardware(std::move(mock_driver));
+  ASSERT_EQ(hardware_interface::CallbackReturn::SUCCESS, hardware->on_configure(unconfigured()));
+  ASSERT_TRUE(wait_for_status([](const MotorsStatus& s) { return s.connected; }).has_value());
+
+  ON_CALL(*driver, get_status(_)).WillByDefault([](const rclcpp::Time&) -> StatusResponse {
+    throw std::runtime_error("IO Exception (5): Input/output error");
+  });
+  ASSERT_EQ(hardware_interface::return_type::ERROR, hardware->read(rclcpp::Time{}, rclcpp::Duration::from_seconds(0)));
+
+  const auto status = wait_for_status([](const MotorsStatus& s) { return !s.connected; });
+  ASSERT_TRUE(status.has_value());
+  EXPECT_EQ("Lost the StepIt controller: IO Exception (5): Input/output error", status->message);
+}
+
+/**
+ * The status is published again every second, so that a subscriber knows the
+ * node is alive.
+ */
+TEST_F(TestStepitHardwareStatus, publishes_the_status_every_second)
+{
+  auto hardware = make_hardware(healthy_driver());
+  int count = 0;
+  auto subscription = listener_->create_subscription<MotorsStatus>("/stepithardware/status",
+                                                                   rclcpp::QoS(1).reliable().transient_local(),
+                                                                   [&count](const MotorsStatus&) { count++; });
+  const auto end = std::chrono::steady_clock::now() + std::chrono::milliseconds(2500);
+  while (std::chrono::steady_clock::now() < end)
+  {
+    executor_->spin_some(std::chrono::milliseconds(50));
+  }
+  // The latched one, then one a second.
+  EXPECT_GE(count, 3);
+  EXPECT_LE(count, 4);
 }
 
 }  // namespace stepit_driver::test
